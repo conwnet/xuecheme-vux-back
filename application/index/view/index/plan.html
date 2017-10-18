@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html class=" js csstransforms3d"><head>
+    <meta charset="utf-8">
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>课表管理</title>
+    <link rel="stylesheet" href="/static/css/base.css">
+    <link rel="stylesheet" href="/static/css/page.css">
+    <!--[if lte IE 8]>
+    <link href="/static/css/ie8.css" rel="stylesheet" type="text/css"/>
+    <![endif]-->
+    <script type="text/javascript" src="/static/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/static/js/main.js"></script>
+    <script type="text/javascript" src="/static/js/modernizr.js"></script>
+    <script type="text/javascript" src="/static/js/vue.min.js"></script>
+
+    <!--[if IE]>
+    <script src="http://libs.useso.com/js/html5shiv/3.7/html5shiv.min.js"></script>
+    <![endif]-->
+</head>
+
+<body style="background: #f6f5fa;">
+<!--content S-->
+<div class="super-content" id="app">
+    <div class="superCtab">
+        <div class="publishArt">
+            <h4>编辑课表</h4>
+            <div class="pubMain">
+                <h5 class="pubtitle"> </h5>
+                <div class="pub-txt-bar" style="margin-top: 10px;" v-for="plan in plans">
+                    <span style="width: auto; padding-right: 10px;" class="errorBox">开始时间</span>
+
+                    <select style="width: 80px; height: 30px;" v-model="plan.start_hour">
+                        <option v-for="hour in hours">{{ hour }}</option>
+                    </select>
+                    <span>:</span>
+                    <select style="width: 80px; height: 30px;" v-model="plan.start_min">
+                        <option v-for="min in mins">{{ min }}</option>
+                    </select>
+
+                    <span style="width: auto; padding-right: 10px;" class="errorBox">结束时间</span>
+
+                    <select style="width: 80px; height: 30px;" v-model="plan.end_hour">
+                        <option v-for="hour in hours">{{ hour }}</option>
+                    </select>
+                    <span>:</span>
+                    <select style="width: 80px; height: 30px;" v-model="plan.end_min">
+                        <option v-for="min in mins">{{ min }}</option>
+                    </select>
+
+                    <button class="errorBox" style="padding-right: 10px; width: auto;" @click="removeplan(plan)">删除</button>
+                </div>
+
+                <div class="pub-btn" style="margin-left: 100px;">
+                    <input type="button" @click="addplan" value="新增" class="saveBtn">
+
+                    <input style="margin-left: 20px;" type="button" @click="saveplan " value="保存" class="saveBtn">
+
+                    <input style="margin-left: 20px;" type="button" @click="sortplan " value="排序" class="saveBtn">
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <!--main-->
+
+</div>
+<!--content E-->
+<script>
+    var vm = new Vue({
+        el: '#app',
+        data: {
+            name: 'netcon',
+            plans: [{
+                start_hour: -1,
+                start_min: -1,
+                end_hour: -1,
+                end_min: -1
+            }]
+        },
+        computed: {
+            hours: function () {
+                var ret = [];
+                for(var i = 0; i < 24; i++)
+                    ret.push(('00' + i).slice(-2));
+                return ret;
+            },
+            mins: function () {
+                var ret = [];
+                for(var i = 0; i < 60; i++)
+                    ret.push(('00' + i).slice(-2));
+                return ret;
+            }
+        },
+        methods: {
+            saveplan: function () {
+                var cs = this.plans;
+                var ret = [];
+                for(var i = 0; i < cs.length; i++) {
+                    var c = cs[i];
+                    if(c.start_hour < 0 || c.start_min < 0 || c.end_hour < 0 || c.end_min < 0) {
+                        alert('请保证所以课程均正确选择时间');
+                        return ;
+                    }
+                    var r = {
+                        start: c.start_hour * 3600 + c.start_min * 60,
+                        end: c.end_hour * 3600 + c.end_min * 60
+                    };
+                    if(r.start >= r.end) {
+                        alert('请保证下课时间大于上课时间...');
+                        return ;
+                    }
+                    ret.push(r);
+                }
+                ret.sort(function (a, b) {
+                    return a.start - b.start
+                });
+                for(var i = 1; i < ret.length; i++) {
+                    if(ret[i].start < ret[i - 1].end) {
+                        alert('课程时间有重叠，请仔细检查');
+                        return ;
+                    }
+                }
+                $.post("{:url('/savePlan')}", {
+                    val: JSON.stringify(this.plans)
+                }, function(data,status) {
+                    if(data != 'ok') {
+                        alert(data);
+                    } else {
+                        alert('保存成功！');
+                        location.reload();
+                    }
+                });
+            },
+            addplan: function () {
+                this.plans.push({
+                    start_hour: -1,
+                    start_min: -1,
+                    end_hour: -1,
+                    end_min: -1
+                })
+            },
+            removeplan: function (plan) {
+                var plans = this.plans;
+                plans.splice(plans.indexOf(plan), 1);
+            },
+            sortplan: function () {
+                this.plans.sort(function (a, b) {
+                    if(a.start_hour != b.start_hour)
+                        return a.start_hour - b.start_hour;
+                    if(a.start_min != b.start_min)
+                        return a.start_min - b.start_min;
+                })
+            }
+        },
+        created: function () {
+            var plan = '{:$plan}';
+            this.plans = JSON.parse(plan);
+        }
+    });
+</script>
+
+
+</body></html>

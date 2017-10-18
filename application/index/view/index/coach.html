@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html class=" js csstransforms3d"><head>
+    <meta charset="utf-8">
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>教练管理</title>
+    <link rel="stylesheet" href="/static/css/base.css">
+    <link rel="stylesheet" href="/static/css/page.css">
+    <!--[if lte IE 8]>
+    <link href="/static/css/ie8.css" rel="stylesheet" type="text/css"/>
+    <![endif]-->
+    <script type="text/javascript" src="/static/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/static/js/main.js"></script>
+    <script type="text/javascript" src="/static/js/modernizr.js"></script>
+    <!--[if IE]>
+    <script src="http://libs.useso.com/js/html5shiv/3.7/html5shiv.min.js"></script>
+    <![endif]-->
+</head>
+
+<body style="background: #f6f5fa;">
+<!--content S-->
+<div class="super-content RightMain" id="RightMain">
+
+    <div class="super-header clearfix">
+        <h2>教练管理</h2>
+        <div class="head-right">
+            <i class="ico-user"></i>当前用户：
+            <div class="userslideDown">
+                <a href="javascript:;" class="superUser">Admin<i class="ico-tri"></i></a>
+                <div class="slidedownBox">
+                    <ul>
+                        <li><a href="{:url('/password')}" id="test">修改密码</a></li>
+                        <li><a href="{:url('/signout')}">退出</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--header-->
+    <div class="superCtab">
+        <div class="cg-title clearfix">
+            <a href="javascript:;" class="default-add-btn newPdBtn"><i class="ico-add"></i>添加教练</a>
+            <div class="searchBar">
+                <input type="text" id="search" value="" class="form-control srhTxt" placeholder="输入关键字搜索">
+                <input type="button" class="srhBtn" onclick="search()" value="">
+            </div>
+        </div>
+        <div class="cgsuperCtab">
+            <div class="Mian-cont-wrap">
+                <div class="defaultTab-T">
+                    <table border="0" cellspacing="0" cellpadding="0" class="defaultTable">
+                        <tbody><tr><th class="td_6">教练ID</th><th class="td_7 td_7_1">教练手机号</th><th class="td_10">操作</th></tr>
+                        </tbody></table>
+                </div>
+                <table border="0" cellspacing="0" cellpadding="0" class="defaultTable defaultTable2">
+                    <tbody>
+                    {volist name="coaches" id="coach"}
+                    <tr>
+                        <td class="td_6"><span class="label">{$coach.idx}</span></td>
+                        <td class="td_7 td_7_1">{$coach.username}</td>
+                        <td class="td_10"><div class="btn"><a href="javascript:;" class="modify cg-xiugai-a" onclick="selectCoach({$coach.id})">修改</a><a href="#" onclick="deleteCoach({$coach.id})" class="delete-a">删除</a></div></td>
+                    </tr>
+                    {/volist}
+                    </tbody></table>
+                <!--pages S-->
+                <div class="pageSelect">
+                    <span>共 <b>{$count}</b> 条 每页 <b>10 </b>条   {$page + 1}/{:ceil($count/10)}</span>
+                    <div class="pageWrap">
+                        <a class="pagePre" href="{:url('/coach') . '?page=' . ($page - 1)}"><i class="ico-pre">&nbsp;</i></a>
+                        <a href="#" class="pagenumb cur">{$page + 1}</a>
+                        <a class="pagenext" href="{:url('/coach') . '?page=' . ($page + 1)}"><i class="ico-next">&nbsp;</i></a>
+                    </div>
+                </div>
+                <!--pages E-->
+            </div>
+
+        </div>
+    </div>
+    <!--main-->
+
+</div>
+<!--content E-->
+
+<div class="layuiBg"></div><!--公共遮罩-->
+<!--点击添加标签弹出-->
+<div class="addFeileibox layuiBox newLabelBox">
+    <div class="layer-title clearfix"><h2>添加教练</h2><span class="layerClose"></span></div>
+    <div class="layer-content">
+        <dl class="PDlabel-list clearfix">
+            <dt>输入教练手机号：</dt>
+            <dd><input id="mobile" type="text" placeholder="11 位数字" class="txt"></dd>
+        </dl>
+        <dl class="PDlabel-list clearfix">
+            <dt>输入教练密码：</dt>
+            <dd><input id="password" type="text" placeholder="6 位以上" class="txt"></dd>
+        </dl>
+        <dl class="PDlabel-list clearfix">
+            <input type="button" value="保存" class="saveBtn addCoachBtn">
+        </dl>
+    </div>
+</div>
+
+<!--点击修改弹出-->
+<div class="xcXgBox layuiBox newLabelBox">
+    <div class="layer-title clearfix"><h2>修改密码</h2><span class="layerClose"></span></div>
+    <div class="layer-content">
+        <dl class="PDlabel-list clearfix">
+            <dt>新密码：</dt>
+            <dd>
+                <input id="id" type="hidden" class="txt">
+                <input id="newPassword" type="text" class="txt">
+            </dd>
+        </dl>
+        <dl class="PDlabel-list clearfix">
+            <input type="button" value="保存" class="saveBtn modifyCoachBtn">
+        </dl>
+    </div>
+</div>
+
+<script>
+    $('.addCoachBtn').click(function () {
+        $.post("{:url('/addCoach')}", {
+            mobile: $('#mobile').val(),
+            password: $('#password').val()
+        }, function(data,status) {
+            console.log(data);
+            if(data != 'ok') {
+                alert(data);
+            } else {
+                location.reload();
+            }
+        });
+    });
+
+    function selectCoach(id) {
+        $('#id').val(id);
+    }
+
+    $('.modifyCoachBtn').click(function () {
+        $.post("{:url('/modifyCoach')}", {
+            id: $('#id').val(),
+            password: $('#newPassword').val()
+        }, function(data,status) {
+            if(data != 'ok') {
+                alert(data);
+            } else {
+                alert('修改成功！');
+                location.reload();
+            }
+        });
+    });
+
+    function deleteCoach(id) {
+        var res = confirm('确认删除？');
+        if(res) {
+            $.post("{:url('/deleteCoach')}", {
+                id: id
+            }, function(data,status) {
+                if(data != 'ok') {
+                    alert(data);
+                } else {
+                    location.reload();
+                }
+            });
+        }
+    };
+
+
+    function search() {
+        var v = $('#search').val();
+        location.href = '{:url("/coach")}?page={$page}&search=' + v;
+    }
+
+</script>
+
+</body></html>
