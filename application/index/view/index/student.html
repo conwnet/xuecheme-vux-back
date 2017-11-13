@@ -15,6 +15,7 @@
     <!--[if IE]>
     <script src="http://libs.useso.com/js/html5shiv/3.7/html5shiv.min.js"></script>
     <![endif]-->
+    <script type="text/javascript" src="/static/js/vue.min.js"></script>
 </head>
 
 <body style="background: #f6f5fa;">
@@ -57,9 +58,15 @@
                     {volist name="students" id="student"}
                     <tr>
                         <td class="td_6"><span class="label">{$student.idx}</span></td>
-                        <td class="t_1">{$student.username}</td>
-                        <td class="td_8">{$student.coach_mobile}</td>
-                        <td class="td_10"><div class="btn"><a href="javascript:;" class="modify cg-xiugai-a" onclick="selectStudent({$student.id})">修改</a><a href="#" onclick="deleteStudent({$student.id})" class="delete-a">删除</a></div></td>
+                        <td class="t_1">
+                            {$student.username}
+                            <a href="javascript:;" style="border-radius: 3px; padding: 1px 5px; background-color: #f69830; color: #fff;" onclick="courseList({$student.id})">选课</a>
+                        </td>
+                        <td class="td_8">
+                            {$student.coach_mobile}
+                            <a href="javascript:;" style="border-radius: 3px; padding: 1px 5px; background-color: #f69830; color: #fff;" onclick="changeCoach({$student.id})">修改</a>
+                        </td>
+                        <td class="td_10"><div class="btn"><a href="javascript:;" class="modify cg-xiugai-a" onclick="changePassword({$student.id})">改密</a><a href="#" onclick="deleteStudent({$student.id})" class="delete-a">删除</a></div></td>
                     </tr>
                     {/volist}
                     </tbody></table>
@@ -105,14 +112,14 @@
     </div>
 </div>
 
-<!--点击修改弹出-->
+<input id="id" type="hidden" class="txt">
+<!--点击改密弹出-->
 <div class="xcXgBox layuiBox newLabelBox">
     <div class="layer-title clearfix"><h2>修改密码</h2><span class="layerClose"></span></div>
     <div class="layer-content">
         <dl class="PDlabel-list clearfix">
             <dt>新密码：</dt>
             <dd>
-                <input id="id" type="hidden" class="txt">
                 <input id="newPassword" type="text" class="txt">
             </dd>
         </dl>
@@ -122,32 +129,169 @@
     </div>
 </div>
 
+<!--点击修改弹出-->
+<div class="xgJlBox layuiBox newLabelBox">
+    <div class="layer-title clearfix"><h2 id="box_label">修改教练</h2><span class="layerClose"></span></div>
+    <div class="layer-content">
+        <dl class="PDlabel-list clearfix">
+            <dt>新教练手机号码：</dt>
+            <dd>
+                <input id="newCoachMobile" type="text" class="txt">
+            </dd>
+        </dl>
+        <dl class="PDlabel-list clearfix">
+            <input type="button" value="保存" class="saveBtn modifyCoachMobileBtn">
+        </dl>
+    </div>
+</div>
+
+<!--点击课程表弹出-->
+<div id="courseList" class="courseList layuiBox newLabelBox" style="min-width:550px;">
+    <div class="layer-title clearfix"><h2>课程表</h2><span class="layerClose"></span></div>
+    <div class="layer-content">
+        <dl class="PDlabel-list clearfix">
+            <dt>已选课程：<input type="button" @click="addCourse" value="新增" style="padding: 0 5px; background-color: #088; color: #fff;"></dt>
+            <dd style="margin-bottom: 10px;" v-for="item in courseList">
+                <input style="width: 50px; border-radius: 3px; border: 1px solid #888; text-align: center;" v-model="item.year"> 年
+                <input style="width: 30px; border-radius: 3px; border: 1px solid #888; text-align: center;" v-model="item.month"> 月
+                <input style="width: 30px; border-radius: 3px; border: 1px solid #888; text-align: center;" v-model="item.date"> 日
+
+                <span style="padding: 5px;">--</span>
+
+                <input style="width: 30px; border-radius: 3px; border: 1px solid #888; text-align: center;" v-model="item.start_hour"> 时
+                <input style="width: 30px; border-radius: 3px; border: 1px solid #888; text-align: center;" v-model="item.start_min"> 分
+                <span style="padding: 5px;">--</span>
+                <input style="width: 30px; border-radius: 3px; border: 1px solid #888; text-align: center;" v-model="item.end_hour"> 时
+                <input style="width: 30px; border-radius: 3px; border: 1px solid #888; text-align: center;" v-model="item.end_min"> 分
+                <a href="javascript:void(0);" @click="removeThis(item)" style="width: 10px; border: 1px solid #f00; border-radius: 3px; padding: 0 3px; color: #f00;">删除</a>
+            </dd>
+
+        </dl>
+
+        <dl class="PDlabel-list clearfix">
+            <input type="button" value="保存" @click="saveCourse()" class="saveBtn">
+        </dl>
+        <br />
+        <p style="color: #f00; text-align: center;">注意：选课时间需要与课程表中具体课程对应！</p>
+    </div>
+</div>
+
 <script>
+
+    var vm = new Vue({
+        el: '#courseList',
+        data: {
+            id: 0,
+            courseList: []
+        },
+        watch: {
+            id: function (newVal) {
+                var _this = this;
+                $.get("{:url('/course')}" + '?id=' + newVal, function (data, status) {
+                    data.forEach(function (x) {
+                        x.start_hour = Math.floor(x.start / 3600);
+                        x.start_min = Math.floor((x.start % 3600) / 60);
+                        x.end_hour = Math.floor(x.end / 3600);
+                        x.end_min = Math.floor((x.end % 3600) / 60);
+                    });
+                    _this.courseList = data;
+                })
+            }
+        },
+        methods: {
+            removeThis: function (plan) {
+                var courseList = this.courseList;
+                courseList.splice(courseList.indexOf(plan), 1);
+            },
+            addCourse: function () {
+                var d = new Date();
+                this.courseList.push({
+                    year: d.getYear() + 1900,
+                    month: d.getMonth() + 1,
+                    date: d.getDate() + 1,
+                    start_hour: 8,
+                    start_min: 0,
+                    end_hour: 9,
+                    end_min: 0
+                })
+            },
+            saveCourse: function () {
+                $.post("{:url('/saveCourse')}", {
+                    id: this.id,
+                    courseList: JSON.stringify(this.courseList)
+                }, function (data, status) {
+                    if(data != 'ok') {
+                        alert(data);
+                    } else {
+                        location.reload();
+                    }
+                })
+            }
+        }
+    });
+
     $('.addStudentBtn').click(function () {
         $.post("{:url('/addStudent')}", {
                 mobile: $('#mobile').val(),
                 password: $('#password').val(),
                 coach_mobile: $('#coach_mobile').val()
             }, function(data,status) {
-                console.log(data);
                 if(data != 'ok') {
                     alert(data);
                 } else {
-                  location.reload();
+                    location.reload();
                 }
             });
     });
 
-    function selectStudent(id) {
+    function courseList(id) {
+        $(".layuiBg").css({
+            display:"block",height:$(document).height()
+        });
+        $(".courseList").css({
+            left:($("body").width()-$(".courseList").width())/2-20+"px",
+            top:($(window).height()-$(".courseList").height())/2+$(window).scrollTop()+"px",
+            display:"block"
+        });
+        $('#id').val(id);
+        vm.id = 0;
+        vm.id = parseInt(id);
+    }
+
+    function changeCoach(id) {
+        $(".layuiBg").css({
+            display:"block",height:$(document).height()
+        });
+        $(".xgJlBox").css({
+            left:($("body").width()-$(".xgJlBox").width())/2-20+"px",
+            top:($(window).height()-$(".xgJlBox").height())/2+$(window).scrollTop()+"px",
+            display:"block"
+        });
         $('#id').val(id);
     }
+
+    function changePassword(id) {
+        $('#id').val(id);
+    }
+
+    $('.modifyCoachMobileBtn').click(function () {
+        $.post("{:url('/modifyCoachMobile')}", {
+            id: $('#id').val(),
+            coach_mobile: $('#newCoachMobile').val()
+        }, function(data,status) {
+            if(data != 'ok') {
+                alert(data);
+            } else {
+                location.reload();
+            }
+        });
+    });
 
     $('.modifyStudentBtn').click(function () {
         $.post("{:url('/modifyStudent')}", {
             id: $('#id').val(),
             password: $('#newPassword').val()
         }, function(data,status) {
-            console.log(data);
             if(data != 'ok') {
                 alert(data);
             } else {

@@ -100,7 +100,7 @@ class Coach extends Base
             'end' => $end,
             'year' => date('Y', $time),
             'month' => date('m', $time),
-            'date' => date('d', $time)])->find();
+            'date' => date('d', $time)]);
         return $this->json([], 2004, '预约成功！');
     }
 }

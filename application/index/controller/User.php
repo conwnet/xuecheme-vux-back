@@ -60,14 +60,13 @@ class User extends Base
 
     public function getCourseList($type) {
         $user = $this->auth();
-        $user = model\User::find(2);
         $courses = model\Course::where(['user_id' => $user->id])->order(['year', 'month', 'date'], 'desc')->select();
         $ret = [];
         foreach ($courses as $course) {
             $time = mktime(0, 0, 0, $course->month, $course->date, $course->year) + $course->start;
             if($type == 0) {
                 if($time > time()) {
-                    $coach = model\User::find($course->coach_id);
+                    $coach = model\User::where(['id' => $course->coach_id])->find();
                     if($coach) {
                         $ret[] = [
                             'year' => $course->year,
@@ -84,7 +83,7 @@ class User extends Base
                 }
             } else {
                 if($time <= time()) {
-                    $coach = model\User::find($course->coach_id);
+                    $coach = model\User::where(['id' => $course->coach_id])->find();
                     if($coach) {
                         $ret[] = [
                             'year' => $course->year,

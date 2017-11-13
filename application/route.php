@@ -15,7 +15,9 @@ Route::post([
 
     '/addStudent' => 'index/index/addStudent',
     '/modifyStudent' => 'index/index/modifyStudent',
+    '/modifyCoachMobile' => 'index/index/modifyCoachMobile',
     '/deleteStudent' => 'index/index/deleteStudent',
+    '/saveCourse' => 'index/index/saveCourse',
 
     '/addCoach' => 'index/index/addCoach',
     '/modifyCoach' => 'index/index/modifyCoach',
@@ -43,6 +45,7 @@ Route::get([
     '/' => 'index/index/index',
     '/menu' => 'index/index/menu',
     '/student' => 'index/index/student',
+    '/course' => 'index/index/getCourseList',
     '/coach' => 'index/index/coach',
     '/plan' => 'index/index/plan',
     '/signin' => 'index/auth/signin',

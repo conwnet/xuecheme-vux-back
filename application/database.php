@@ -17,9 +17,9 @@ return [
     // 数据库名
     'database'        => 'xuecheme',
     // 用户名
-    'username'        => '',
+    'username'        => 'admin',
     // 密码
-    'password'        => '',
+    'password'        => 'mysql',
     // 端口
     'hostport'        => '3306',
     // 连接dsn
