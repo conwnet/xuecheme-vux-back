@@ -317,4 +317,8 @@ class Index extends Auth
         }
 
     }
+
+    public function homePage() {
+        return $this->fetch();
+    }
 }
